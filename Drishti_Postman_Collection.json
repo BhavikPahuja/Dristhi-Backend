@@ -1,0 +1,832 @@
+{
+  "info": {
+    "_postman_id": "drishti-platform-collection-v1",
+    "name": "Drishti Investigation Platform API Collection",
+    "description": "Auto-generated Postman Collection for all Drishti Platform APIs (Frontend, NLP, ML, and Agentic AI Services).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Case Management",
+      "item": [
+        {
+          "name": "Create Case",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Operation Cyber Shield\",\n  \"description\": \"Financial fraud and money laundering investigation targeting syndicate networks.\",\n  \"status\": \"ACTIVE\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/cases",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "cases"]
+            }
+          }
+        },
+        {
+          "name": "List All Cases",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/cases",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "cases"]
+            }
+          }
+        },
+        {
+          "name": "Get Case by ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/cases/CASE-001",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "cases", "CASE-001"]
+            }
+          }
+        },
+        {
+          "name": "Update Case",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Operation Cyber Shield - Phase 2\",\n  \"description\": \"Expanded investigation scope covering international offshore bank accounts.\",\n  \"status\": \"IN_PROGRESS\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/cases/CASE-001",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "cases", "CASE-001"]
+            }
+          }
+        },
+        {
+          "name": "Delete Case",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{baseUrl}}/api/cases/CASE-001",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "cases", "CASE-001"]
+            }
+          }
+        },
+        {
+          "name": "Get Case Surveillance Logs",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/cases/CASE-001/surveillance",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "cases", "CASE-001", "surveillance"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Person Investigation",
+      "item": [
+        {
+          "name": "Search Persons",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/persons/search?query=John",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "persons", "search"],
+              "query": [{ "key": "query", "value": "John" }]
+            }
+          }
+        },
+        {
+          "name": "Get Person Details",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/persons/PERSON-001",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "persons", "PERSON-001"]
+            }
+          }
+        },
+        {
+          "name": "Get Person Profile",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/persons/PERSON-001/profile",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "persons", "PERSON-001", "profile"]
+            }
+          }
+        },
+        {
+          "name": "Get Person Connections",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/persons/PERSON-001/connections",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "persons", "PERSON-001", "connections"]
+            }
+          }
+        },
+        {
+          "name": "Get Person Calls",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/persons/PERSON-001/calls",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "persons", "PERSON-001", "calls"]
+            }
+          }
+        },
+        {
+          "name": "Get Person Transactions",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/persons/PERSON-001/transactions",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "persons", "PERSON-001", "transactions"]
+            }
+          }
+        },
+        {
+          "name": "Get Person Vehicles",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/persons/PERSON-001/vehicles",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "persons", "PERSON-001", "vehicles"]
+            }
+          }
+        },
+        {
+          "name": "Get Person Locations",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/persons/PERSON-001/locations",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "persons", "PERSON-001", "locations"]
+            }
+          }
+        },
+        {
+          "name": "Get Person Surveillance",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/persons/PERSON-001/surveillance",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "persons", "PERSON-001", "surveillance"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Call Detail Records (CDR)",
+      "item": [
+        {
+          "name": "Create Call Record",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"callerPhoneId\": \"PHONE-9876543210\",\n  \"receiverPhoneId\": \"PHONE-1234567890\",\n  \"timestamp\": \"2026-09-17T10:30:00Z\",\n  \"durationSeconds\": 180,\n  \"caseId\": \"CASE-001\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/cdr",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "cdr"]
+            }
+          }
+        },
+        {
+          "name": "Bulk Create Call Records",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "[\n  {\n    \"callerPhoneId\": \"PHONE-9876543210\",\n    \"receiverPhoneId\": \"PHONE-1234567890\",\n    \"timestamp\": \"2026-09-17T10:30:00Z\",\n    \"durationSeconds\": 180,\n    \"caseId\": \"CASE-001\"\n  },\n  {\n    \"callerPhoneId\": \"PHONE-1234567890\",\n    \"receiverPhoneId\": \"PHONE-5551234567\",\n    \"timestamp\": \"2026-09-17T11:15:00Z\",\n    \"durationSeconds\": 320,\n    \"caseId\": \"CASE-001\"\n  }\n]"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/cdr/bulk",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "cdr", "bulk"]
+            }
+          }
+        },
+        {
+          "name": "Get Call Record by ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/cdr/CDR-001",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "cdr", "CDR-001"]
+            }
+          }
+        },
+        {
+          "name": "Get Calls by Phone ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/phones/PHONE-9876543210/calls",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "phones", "PHONE-9876543210", "calls"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Transactions & Accounts",
+      "item": [
+        {
+          "name": "Create Transaction",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sourceAccountId\": \"ACC-1001\",\n  \"destinationAccountId\": \"ACC-2002\",\n  \"amount\": 50000.00,\n  \"currency\": \"USD\",\n  \"timestamp\": \"2026-09-17T12:00:00Z\",\n  \"description\": \"Consulting Fee Transfer\",\n  \"caseId\": \"CASE-001\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/transactions",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "transactions"]
+            }
+          }
+        },
+        {
+          "name": "Bulk Create Transactions",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "[\n  {\n    \"sourceAccountId\": \"ACC-1001\",\n    \"destinationAccountId\": \"ACC-2002\",\n    \"amount\": 50000.00,\n    \"currency\": \"USD\",\n    \"timestamp\": \"2026-09-17T12:00:00Z\",\n    \"description\": \"Consulting Fee Transfer\",\n    \"caseId\": \"CASE-001\"\n  },\n  {\n    \"sourceAccountId\": \"ACC-2002\",\n    \"destinationAccountId\": \"ACC-3003\",\n    \"amount\": 48500.00,\n    \"currency\": \"USD\",\n    \"timestamp\": \"2026-09-17T12:30:00Z\",\n    \"description\": \"Offshore Account Structuring\",\n    \"caseId\": \"CASE-001\"\n  }\n]"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/transactions/bulk",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "transactions", "bulk"]
+            }
+          }
+        },
+        {
+          "name": "Get Transaction by ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/transactions/TXN-001",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "transactions", "TXN-001"]
+            }
+          }
+        },
+        {
+          "name": "Get Account Transactions",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/accounts/ACC-1001/transactions",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "accounts", "ACC-1001", "transactions"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Vehicle Management",
+      "item": [
+        {
+          "name": "Create Vehicle",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"registrationNumber\": \"NY-882-99X\",\n  \"make\": \"Mercedes-Benz\",\n  \"model\": \"S-Class S580\",\n  \"ownerPersonId\": \"PERSON-001\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/vehicles",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "vehicles"]
+            }
+          }
+        },
+        {
+          "name": "List All Vehicles",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/vehicles",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "vehicles"]
+            }
+          }
+        },
+        {
+          "name": "Get Vehicle by ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/vehicles/VEH-001",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "vehicles", "VEH-001"]
+            }
+          }
+        },
+        {
+          "name": "Get Vehicle History",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/vehicles/VEH-001/history",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "vehicles", "VEH-001", "history"]
+            }
+          }
+        },
+        {
+          "name": "Get Vehicle Surveillance",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/vehicles/VEH-001/surveillance",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "vehicles", "VEH-001", "surveillance"]
+            }
+          }
+        },
+        {
+          "name": "Search Vehicles by Registration",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/vehicles/search?registration=NY-882-99X",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "vehicles", "search"],
+              "query": [{ "key": "registration", "value": "NY-882-99X" }]
+            }
+          }
+        },
+        {
+          "name": "Get Person Vehicles",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/vehicles/person/PERSON-001",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "vehicles", "person", "PERSON-001"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. Location & Surveillance",
+      "item": [
+        {
+          "name": "Create Location",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Central Safehouse Alpha\",\n  \"address\": \"122 Grand Avenue, Suite 400, New York, NY\",\n  \"latitude\": 40.7128,\n  \"longitude\": -74.0060\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/locations",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "locations"]
+            }
+          }
+        },
+        {
+          "name": "Create Location Event",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"personId\": \"PERSON-001\",\n  \"locationId\": \"LOC-001\",\n  \"timestamp\": \"2026-09-17T14:00:00Z\",\n  \"source\": \"CCTV_SURVEILLANCE\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/location-events",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "location-events"]
+            }
+          }
+        },
+        {
+          "name": "Get Location Activity",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/locations/LOC-001/activity",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "locations", "LOC-001", "activity"]
+            }
+          }
+        },
+        {
+          "name": "Get Persons at Location",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/locations/LOC-001/persons",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "locations", "LOC-001", "persons"]
+            }
+          }
+        },
+        {
+          "name": "Create Surveillance Report",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"caseId\": \"CASE-001\",\n  \"description\": \"Subject observed entering luxury vehicle outside target location\",\n  \"timestamp\": \"2026-09-17T15:45:00Z\",\n  \"locationId\": \"LOC-001\",\n  \"vehicleId\": \"VEH-001\",\n  \"personId\": \"PERSON-001\",\n  \"source\": \"FIELD_AGENT_STRIKER\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/surveillance",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "surveillance"]
+            }
+          }
+        },
+        {
+          "name": "Get Surveillance Report by ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/surveillance/REP-001",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "surveillance", "REP-001"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "7. Document Management",
+      "item": [
+        {
+          "name": "Upload Document (Multipart)",
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "file", "type": "file", "src": "" },
+                { "key": "documentType", "value": "INTERCEPT_TRANSCRIPT", "type": "text" },
+                { "key": "title", "value": "Wiretap Audio Log 04", "type": "text" },
+                { "key": "source", "value": "FIELD_OFFICE_ALPHA", "type": "text" },
+                { "key": "language", "value": "EN", "type": "text" }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/cases/CASE-001/documents/upload",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "cases", "CASE-001", "documents", "upload"]
+            }
+          }
+        },
+        {
+          "name": "List Case Documents",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/cases/CASE-001/documents",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "cases", "CASE-001", "documents"]
+            }
+          }
+        },
+        {
+          "name": "Get Document by ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/documents/DOC-001",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "documents", "DOC-001"]
+            }
+          }
+        },
+        {
+          "name": "Delete Document",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{baseUrl}}/api/documents/DOC-001",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "documents", "DOC-001"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "8. Network Graph & Entities",
+      "item": [
+        {
+          "name": "Get Person Network Graph",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/network/person/PERSON-001?depth=2",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "network", "person", "PERSON-001"],
+              "query": [{ "key": "depth", "value": "2" }]
+            }
+          }
+        },
+        {
+          "name": "Get Cytoscape Graph",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/network/entity/ENT-001?depth=2",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "network", "entity", "ENT-001"],
+              "query": [{ "key": "depth", "value": "2" }]
+            }
+          }
+        },
+        {
+          "name": "Find Path Between Entities",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/network/path?source=PERSON-001&target=ACC-3003&maxDepth=5",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "network", "path"],
+              "query": [
+                { "key": "source", "value": "PERSON-001" },
+                { "key": "target", "value": "ACC-3003" },
+                { "key": "maxDepth", "value": "5" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Entity Details",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/entities/ENT-001",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "entities", "ENT-001"]
+            }
+          }
+        },
+        {
+          "name": "Get Evidence by ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/evidence/EVI-001",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "evidence", "EVI-001"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "9. Dashboard & Timeline",
+      "item": [
+        {
+          "name": "Get Dashboard Summary",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/dashboard/summary",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "dashboard", "summary"]
+            }
+          }
+        },
+        {
+          "name": "Get Recent Cases",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/dashboard/recent-cases",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "dashboard", "recent-cases"]
+            }
+          }
+        },
+        {
+          "name": "Get Anomalies Dashboard",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/dashboard/anomalies",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "dashboard", "anomalies"]
+            }
+          }
+        },
+        {
+          "name": "Get Person Timeline",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/persons/PERSON-001/timeline",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "persons", "PERSON-001", "timeline"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "10. Internal NLP Services",
+      "item": [
+        {
+          "name": "NLP Document Extraction",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"documentId\": \"DOC-901\",\n  \"caseId\": \"CASE-001\",\n  \"documentType\": \"INTERCEPT_LOG\",\n  \"language\": \"EN\",\n  \"text\": \"Subject John Doe transferred $50,000 from Account ACC-1001 to Jane Smith at Safehouse Alpha on 2026-09-17.\",\n  \"metadata\": {\n    \"sourceOffice\": \"ALPHA\",\n    \"priority\": \"HIGH\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/internal/nlp/extract",
+              "host": ["{{baseUrl}}"],
+              "path": ["internal", "nlp", "extract"]
+            }
+          }
+        },
+        {
+          "name": "NLP Entity Resolution",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"entity\": {\n    \"name\": \"Johnathan Doe\",\n    \"phone\": \"+1-555-0199\",\n    \"address\": \"122 Grand Ave\"\n  },\n  \"candidateEntities\": [\n    {\n      \"canonicalId\": \"PERSON-001\",\n      \"name\": \"John Doe\",\n      \"phone\": \"+1-555-0199\",\n      \"address\": \"122 Grand Avenue\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/internal/nlp/entity-resolution",
+              "host": ["{{baseUrl}}"],
+              "path": ["internal", "nlp", "entity-resolution"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "11. Internal ML Services",
+      "item": [
+        {
+          "name": "ML Analyze Entities",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"caseId\": \"CASE-001\",\n  \"entityIds\": [\"PERSON-001\", \"PERSON-002\", \"ACC-1001\"],\n  \"analysisTypes\": [\"ANOMALY_DETECTION\", \"KEY_ACTOR_CENTRALITY\", \"COMMUNITY_CLUSTERING\"]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/internal/ml/analyze",
+              "host": ["{{baseUrl}}"],
+              "path": ["internal", "ml", "analyze"]
+            }
+          }
+        },
+        {
+          "name": "Get All Anomalies",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/internal/ml/anomalies",
+              "host": ["{{baseUrl}}"],
+              "path": ["internal", "ml", "anomalies"]
+            }
+          }
+        },
+        {
+          "name": "Get Key Actors",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/internal/ml/key-actors",
+              "host": ["{{baseUrl}}"],
+              "path": ["internal", "ml", "key-actors"]
+            }
+          }
+        },
+        {
+          "name": "Get Communities",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/internal/ml/communities",
+              "host": ["{{baseUrl}}"],
+              "path": ["internal", "ml", "communities"]
+            }
+          }
+        },
+        {
+          "name": "Get Potential Links",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/internal/ml/potential-links",
+              "host": ["{{baseUrl}}"],
+              "path": ["internal", "ml", "potential-links"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "12. Internal Agent AI Services",
+      "item": [
+        {
+          "name": "Agent Investigate Query",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sessionId\": \"SESS-101\",\n  \"caseId\": \"CASE-001\",\n  \"query\": \"Find all suspicious money transfers linked to PERSON-001 and list associated safehouses.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/internal/agent/investigate",
+              "host": ["{{baseUrl}}"],
+              "path": ["internal", "agent", "investigate"]
+            }
+          }
+        },
+        {
+          "name": "Get Agent Session History",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/internal/agent/session/SESS-101",
+              "host": ["{{baseUrl}}"],
+              "path": ["internal", "agent", "session", "SESS-101"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

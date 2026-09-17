@@ -1,0 +1,785 @@
+================================================================================
+                        DRISHTI PROJECT - API SPECIFICATIONS
+================================================================================
+
+1. ACCOUNT MANAGEMENT API
+Controller: com.project.tekathon.drishti.controller.AccountController
+
+- GET /api/accounts/{accountId}/transactions
+  Path Variables:
+    - accountId (String)
+  Response Payload: List<TransactionResponse>
+    [
+      {
+        "transactionId": "String",
+        "sourceAccountId": "String",
+        "destinationAccountId": "String",
+        "amount": "BigDecimal",
+        "currency": "String",
+        "timestamp": "Instant (ISO-8601)",
+        "description": "String",
+        "caseId": "String"
+      }
+    ]
+
+--------------------------------------------------------------------------------
+
+2. CASE MANAGEMENT API
+Controller: com.project.tekathon.drishti.controller.CaseController
+
+- POST /api/cases
+  Status Code: 201 Created
+  Request Body: CreateCaseRequest
+    - title (String, Required, Max: 255)
+    - description (String, Optional, Max: 4000)
+    - status (String, Required, Max: 32)
+  Response Payload: CaseResponse
+    {
+      "caseId": "String",
+      "title": "String",
+      "description": "String",
+      "status": "String",
+      "createdAt": "Instant (ISO-8601)",
+      "updatedAt": "Instant (ISO-8601)"
+    }
+
+- GET /api/cases
+  Response Payload: List<CaseListItemResponse>
+    [
+      {
+        "caseId": "String",
+        "title": "String",
+        "status": "String",
+        "createdAt": "Instant (ISO-8601)"
+      }
+    ]
+
+- GET /api/cases/{caseId}
+  Path Variables:
+    - caseId (String)
+  Response Payload: CaseResponse
+
+- PUT /api/cases/{caseId}
+  Path Variables:
+    - caseId (String)
+  Request Body: UpdateCaseRequest
+    - title (String, Required, Max: 255)
+    - description (String, Optional, Max: 4000)
+    - status (String, Required, Max: 32)
+  Response Payload: CaseResponse
+
+- DELETE /api/cases/{caseId}
+  Status Code: 204 No Content
+  Path Variables:
+    - caseId (String)
+  Response Payload: None
+
+- GET /api/cases/{caseId}/surveillance
+  Path Variables:
+    - caseId (String)
+  Response Payload: List<SurveillanceResponse>
+    [
+      {
+        "reportId": "String",
+        "caseId": "String",
+        "description": "String",
+        "timestamp": "Instant (ISO-8601)",
+        "locationId": "String",
+        "vehicleId": "String",
+        "personId": "String",
+        "source": "String"
+      }
+    ]
+
+--------------------------------------------------------------------------------
+
+3. CALL DETAIL RECORDS (CDR) API
+Controller: com.project.tekathon.drishti.controller.CdrController
+
+- POST /api/cdr
+  Status Code: 201 Created
+  Request Body: CreateCdrRequest
+    - callerPhoneId (String, Required)
+    - receiverPhoneId (String, Required)
+    - timestamp (Instant, Required)
+    - durationSeconds (Integer, Optional)
+    - caseId (String, Required)
+  Response Payload: CdrResponse
+    {
+      "cdrId": "String",
+      "callerPhoneId": "String",
+      "receiverPhoneId": "String",
+      "timestamp": "Instant (ISO-8601)",
+      "durationSeconds": "Integer",
+      "caseId": "String"
+    }
+
+- POST /api/cdr/bulk
+  Request Body: List<CreateCdrRequest>
+  Response Payload: List<CdrResponse>
+
+- GET /api/cdr/{cdrId}
+  Path Variables:
+    - cdrId (String)
+  Response Payload: CdrResponse
+
+--------------------------------------------------------------------------------
+
+4. DASHBOARD API
+Controller: com.project.tekathon.drishti.controller.DashboardController
+
+- GET /api/dashboard/summary
+  Response Payload: DashboardSummaryResponse
+    {
+      "totalCases": "long",
+      "totalPersons": "long",
+      "totalVehicles": "long",
+      "totalPhones": "long",
+      "totalAccounts": "long",
+      "totalTransactions": "long",
+      "totalCalls": "long",
+      "totalRelationships": "long",
+      "totalAnomalies": "long"
+    }
+
+- GET /api/dashboard/recent-cases
+  Response Payload: List<?>
+
+- GET /api/dashboard/anomalies
+  Response Payload: List<Map<String, Object>>
+
+- GET /api/dashboard/network-statistics
+  Response Payload: Map<String, Object>
+
+--------------------------------------------------------------------------------
+
+5. DOCUMENT MANAGEMENT API
+Controller: com.project.tekathon.drishti.controller.DocumentController
+
+- POST /api/cases/{caseId}/documents/upload
+  Content-Type: multipart/form-data
+  Status Code: 201 Created
+  Path Variables:
+    - caseId (String)
+  Form Parameters:
+    - file (MultipartFile, Required)
+    - documentType (String, Optional)
+    - title (String, Optional)
+    - source (String, Optional)
+    - language (String, Optional)
+  Response Payload: UploadDocumentResponse
+    {
+      "documentId": "String",
+      "caseId": "String",
+      "documentType": "String",
+      "title": "String",
+      "source": "String",
+      "createdAt": "Instant (ISO-8601)",
+      "nlpResult": "Object"
+    }
+
+- GET /api/cases/{caseId}/documents
+  Path Variables:
+    - caseId (String)
+  Response Payload: List<DocumentListItemResponse>
+    [
+      {
+        "documentId": "String",
+        "caseId": "String",
+        "documentType": "String",
+        "title": "String",
+        "source": "String",
+        "createdAt": "Instant (ISO-8601)"
+      }
+    ]
+
+- GET /api/documents/{documentId}
+  Path Variables:
+    - documentId (String)
+  Response Payload: DocumentResponse
+    {
+      "documentId": "String",
+      "caseId": "String",
+      "documentType": "String",
+      "title": "String",
+      "text": "String",
+      "source": "String",
+      "language": "String",
+      "fileName": "String",
+      "contentType": "String",
+      "createdAt": "Instant (ISO-8601)",
+      "updatedAt": "Instant (ISO-8601)"
+    }
+
+- DELETE /api/documents/{documentId}
+  Status Code: 204 No Content
+  Path Variables:
+    - documentId (String)
+  Response Payload: None
+
+--------------------------------------------------------------------------------
+
+6. ENTITY LOOKUP API
+Controller: com.project.tekathon.drishti.controller.EntityController
+
+- GET /api/entities/{entityId}
+  Path Variables:
+    - entityId (String)
+  Response Payload: Map<String, Object>
+
+- GET /api/entities/{entityId}/connections
+  Path Variables:
+    - entityId (String)
+  Query Parameters:
+    - depth (int, Default: 2)
+  Response Payload: Object
+
+- GET /api/entities/{entityId}/search
+  Path Variables:
+    - entityId (String)
+  Query Parameters:
+    - query (String)
+  Response Payload: List<Map<String, Object>>
+
+--------------------------------------------------------------------------------
+
+7. EVIDENCE API
+Controller: com.project.tekathon.drishti.controller.EvidenceController
+
+- GET /api/evidence/{evidenceId}
+  Path Variables:
+    - evidenceId (String)
+  Response Payload: EvidenceResponse
+    {
+      "evidenceId": "String",
+      "caseId": "String",
+      "type": "String",
+      "description": "String",
+      "sourceDocumentId": "String",
+      "entityId": "String",
+      "relationshipId": "String",
+      "sourceSpanText": "String"
+    }
+
+- GET /api/cases/{caseId}/evidence
+  Path Variables:
+    - caseId (String)
+  Response Payload: List<EvidenceResponse>
+
+- GET /api/entities/{entityId}/evidence
+  Path Variables:
+    - entityId (String)
+  Response Payload: List<EvidenceResponse>
+
+- GET /api/relationships/{relationshipId}/evidence
+  Path Variables:
+    - relationshipId (String)
+  Response Payload: List<EvidenceResponse>
+
+--------------------------------------------------------------------------------
+
+8. LOCATION & EVENTS API
+Controller: com.project.tekathon.drishti.controller.LocationController
+
+- POST /api/locations
+  Status Code: 201 Created
+  Request Body: CreateLocationRequest
+    - name (String, Required)
+    - address (String, Optional)
+    - latitude (Double, Optional)
+    - longitude (Double, Optional)
+  Response Payload: LocationResponse
+    {
+      "locationId": "String",
+      "name": "String",
+      "address": "String",
+      "latitude": "Double",
+      "longitude": "Double"
+    }
+
+- POST /api/location-events
+  Status Code: 201 Created
+  Request Body: LocationEventRequest
+    - personId (String, Required)
+    - locationId (String, Required)
+    - timestamp (Instant, Required)
+    - source (String, Optional)
+  Response Payload: EventResponse
+    {
+      "eventId": "String",
+      "caseId": "String",
+      "eventType": "String",
+      "timestamp": "Instant (ISO-8601)",
+      "locationId": "String",
+      "description": "String",
+      "sourceDocumentId": "String",
+      "entityId": "String",
+      "source": "String"
+    }
+
+- GET /api/locations/{locationId}/activity
+  Path Variables:
+    - locationId (String)
+  Response Payload: List<SurveillanceResponse>
+
+- GET /api/locations/{locationId}/persons
+  Path Variables:
+    - locationId (String)
+  Response Payload: List<String>
+
+--------------------------------------------------------------------------------
+
+9. NETWORK ANALYSIS GRAPH API
+Controller: com.project.tekathon.drishti.controller.NetworkController
+
+- GET /api/network/person/{personId}
+  Path Variables:
+    - personId (String)
+  Query Parameters:
+    - depth (int, Default: 2)
+  Response Payload: NetworkResponse
+    {
+      "rootEntity": "String",
+      "nodes": [
+        { "id": "String", "type": "String", "label": "String" }
+      ],
+      "edges": [
+        { "id": "String", "source": "String", "target": "String", "relationship": "String", "confidence": "Double" }
+      ]
+    }
+
+- GET /api/network/entity/{entityId}
+  Path Variables:
+    - entityId (String)
+  Query Parameters:
+    - depth (int, Default: 2)
+  Response Payload: CytoscapeGraphResponse
+    {
+      "nodes": [ Map<String, Object> ],
+      "edges": [ Map<String, Object> ]
+    }
+
+- GET /api/network/path
+  Query Parameters:
+    - source (String, Required)
+    - target (String, Required)
+    - maxDepth (int, Default: 5)
+  Response Payload: NetworkPathResponse
+    {
+      "source": "String",
+      "target": "String",
+      "pathFound": "Boolean",
+      "paths": [
+        {
+          "nodes": [ "String" ],
+          "relationships": [ "String" ],
+          "length": "Integer"
+        }
+      ]
+    }
+
+- GET /api/network/communities
+  Response Payload: List<?>
+
+- GET /api/network/relationship/{relationshipId}
+  Path Variables:
+    - relationshipId (String)
+  Response Payload: List<RelationshipDetailResponse>
+    [
+      {
+        "relationshipId": "String",
+        "sourceId": "String",
+        "targetId": "String",
+        "relationship": "String",
+        "confidence": "Double",
+        "firstObserved": "String",
+        "lastObserved": "String",
+        "evidenceIds": [ "String" ],
+        "sourceDocumentIds": [ "String" ]
+      }
+    ]
+
+--------------------------------------------------------------------------------
+
+10. PERSON API
+Controller: com.project.tekathon.drishti.controller.PersonController
+
+- GET /api/persons/search
+  Query Parameters:
+    - query (String, Required)
+  Response Payload: List<PersonSearchResponse>
+    [
+      {
+        "personId": "String",
+        "name": "String",
+        "aliases": [ "String" ],
+        "confidence": "Double"
+      }
+    ]
+
+- GET /api/persons/{personId}
+  Path Variables:
+    - personId (String)
+  Response Payload: PersonResponse
+    {
+      "personId": "String",
+      "name": "String",
+      "aliases": [ "String" ],
+      "age": "Integer",
+      "dateOfBirth": "LocalDate (YYYY-MM-DD)",
+      "address": "String",
+      "status": "String",
+      "createdAt": "Instant (ISO-8601)",
+      "updatedAt": "Instant (ISO-8601)"
+    }
+
+- GET /api/persons/{personId}/profile
+  Path Variables:
+    - personId (String)
+  Response Payload: PersonProfileResponse
+    {
+      "personId": "String",
+      "name": "String",
+      "aliases": [ "String" ],
+      "age": "Integer",
+      "dateOfBirth": "LocalDate (YYYY-MM-DD)",
+      "address": "String",
+      "phones": [ "String" ],
+      "vehicles": [ "String" ],
+      "accounts": [ "String" ],
+      "relatedCases": [ "String" ]
+    }
+
+- GET /api/persons/{personId}/connections
+  Path Variables:
+    - personId (String)
+  Response Payload: List<PersonConnectionResponse>
+    [
+      {
+        "sourceId": "String",
+        "relationship": "String",
+        "targetId": "String",
+        "confidence": "Double",
+        "firstObserved": "Instant (ISO-8601)",
+        "lastObserved": "Instant (ISO-8601)"
+      }
+    ]
+
+- GET /api/persons/{personId}/calls
+  Path Variables:
+    - personId (String)
+  Response Payload: List<CdrResponse>
+
+- GET /api/persons/{personId}/transactions
+  Path Variables:
+    - personId (String)
+  Response Payload: List<TransactionResponse>
+
+- GET /api/persons/{personId}/vehicles
+  Path Variables:
+    - personId (String)
+  Response Payload: List<VehicleResponse>
+
+- GET /api/persons/{personId}/locations
+  Path Variables:
+    - personId (String)
+  Response Payload: List<LocationResponse>
+
+- GET /api/persons/{personId}/surveillance
+  Path Variables:
+    - personId (String)
+  Response Payload: List<SurveillanceResponse>
+
+--------------------------------------------------------------------------------
+
+11. PHONE API
+Controller: com.project.tekathon.drishti.controller.PhoneController
+
+- GET /api/phones/{phoneId}/calls
+  Path Variables:
+    - phoneId (String)
+  Response Payload: List<CdrResponse>
+
+--------------------------------------------------------------------------------
+
+12. SURVEILLANCE API
+Controller: com.project.tekathon.drishti.controller.SurveillanceController
+
+- POST /api/surveillance
+  Status Code: 201 Created
+  Request Body: CreateSurveillanceRequest
+    - caseId (String, Required)
+    - description (String, Optional)
+    - timestamp (Instant, Required)
+    - locationId (String, Optional)
+    - vehicleId (String, Optional)
+    - personId (String, Optional)
+    - source (String, Optional)
+  Response Payload: SurveillanceResponse
+    {
+      "reportId": "String",
+      "caseId": "String",
+      "description": "String",
+      "timestamp": "Instant (ISO-8601)",
+      "locationId": "String",
+      "vehicleId": "String",
+      "personId": "String",
+      "source": "String"
+    }
+
+- GET /api/surveillance/{reportId}
+  Path Variables:
+    - reportId (String)
+  Response Payload: SurveillanceResponse
+
+--------------------------------------------------------------------------------
+
+13. TIMELINE API
+Controller: com.project.tekathon.drishti.controller.TimelineController
+
+- GET /api/persons/{personId}/timeline
+  Path Variables:
+    - personId (String)
+  Response Payload: List<PersonTimelineItemResponse>
+    [
+      {
+        "eventId": "String",
+        "type": "String",
+        "timestamp": "Instant (ISO-8601)",
+        "description": "String",
+        "sourceDocumentId": "String"
+      }
+    ]
+
+- GET /api/cases/{caseId}/timeline
+  Path Variables:
+    - caseId (String)
+  Response Payload: List<PersonTimelineItemResponse>
+
+- GET /api/entities/{entityId}/timeline
+  Path Variables:
+    - entityId (String)
+  Response Payload: List<PersonTimelineItemResponse>
+
+--------------------------------------------------------------------------------
+
+14. TRANSACTION API
+Controller: com.project.tekathon.drishti.controller.TransactionController
+
+- POST /api/transactions
+  Status Code: 201 Created
+  Request Body: CreateTransactionRequest
+    - sourceAccountId (String, Required)
+    - destinationAccountId (String, Required)
+    - amount (BigDecimal, Required)
+    - currency (String, Required)
+    - timestamp (Instant, Required)
+    - description (String, Optional)
+    - caseId (String, Required)
+  Response Payload: TransactionResponse
+    {
+      "transactionId": "String",
+      "sourceAccountId": "String",
+      "destinationAccountId": "String",
+      "amount": "BigDecimal",
+      "currency": "String",
+      "timestamp": "Instant (ISO-8601)",
+      "description": "String",
+      "caseId": "String"
+    }
+
+- POST /api/transactions/bulk
+  Request Body: List<CreateTransactionRequest>
+  Response Payload: List<TransactionResponse>
+
+- GET /api/transactions/{transactionId}
+  Path Variables:
+    - transactionId (String)
+  Response Payload: TransactionResponse
+
+--------------------------------------------------------------------------------
+
+15. VEHICLE API
+Controller: com.project.tekathon.drishti.controller.VehicleController
+
+- POST /api/vehicles
+  Status Code: 201 Created
+  Request Body: CreateVehicleRequest
+    - registrationNumber (String, Required)
+    - make (String, Optional)
+    - model (String, Optional)
+    - ownerPersonId (String, Optional)
+  Response Payload: VehicleResponse
+    {
+      "vehicleId": "String",
+      "registrationNumber": "String",
+      "make": "String",
+      "model": "String",
+      "ownerPersonId": "String"
+    }
+
+- GET /api/vehicles
+  Response Payload: List<VehicleResponse>
+
+- GET /api/vehicles/{vehicleId}
+  Path Variables:
+    - vehicleId (String)
+  Response Payload: VehicleResponse
+
+- GET /api/vehicles/{vehicleId}/history
+  Path Variables:
+    - vehicleId (String)
+  Response Payload: List<Object>
+
+- GET /api/vehicles/{vehicleId}/surveillance
+  Path Variables:
+    - vehicleId (String)
+  Response Payload: List<SurveillanceResponse>
+
+- GET /api/vehicles/search
+  Query Parameters:
+    - registration (String, Required)
+  Response Payload: List<VehicleResponse>
+
+- GET /api/vehicles/person/{personId}
+  Path Variables:
+    - personId (String)
+  Response Payload: List<VehicleResponse>
+
+--------------------------------------------------------------------------------
+
+16. INTERNAL AGENT AI INTEGRATION API
+Controller: com.project.tekathon.drishti.controller.AgentController
+
+- POST /internal/agent/investigate
+  Request Body: AgentInvestigateRequest
+    - sessionId (String, Required)
+    - caseId (String, Required)
+    - query (String, Required)
+  Response Payload: AgentInvestigateResponse
+    {
+      "sessionId": "String",
+      "caseId": "String",
+      "answer": "String",
+      "findings": [
+        { "type": "String", "description": "String" }
+      ],
+      "evidence": [
+        { "documentId": "String", "description": "String" }
+      ],
+      "entities": [ "String" ],
+      "relatedCases": [ "String" ]
+    }
+
+- GET /internal/agent/session/{sessionId}
+  Path Variables:
+    - sessionId (String)
+  Response Payload: AgentSessionResponse
+    {
+      "sessionId": "String",
+      "caseId": "String",
+      "messages": [ Map<String, Object> ]
+    }
+
+--------------------------------------------------------------------------------
+
+17. INTERNAL MACHINE LEARNING (ML) INTEGRATION API
+Controller: com.project.tekathon.drishti.controller.MlController
+
+- POST /internal/ml/analyze
+  Request Body: MlAnalyzeRequest
+    - caseId (String, Required)
+    - entityIds (List<String>, Required)
+    - analysisTypes (List<String>, Required)
+  Response Payload: MlAnalyzeResponse
+    {
+      "caseId": "String",
+      "anomalies": [
+        { "entityId": "String", "anomalyType": "String", "anomalyScore": "Double", "description": "String" }
+      ],
+      "keyActors": [
+        { "entityId": "String", "centralityScore": "Double", "role": "String" }
+      ],
+      "communities": [
+        { "communityId": "String", "memberIds": [ "String" ] }
+      ],
+      "potentialLinks": [
+        { "sourceId": "String", "targetId": "String", "predictedRelationship": "String", "probability": "Double" }
+      ]
+    }
+
+- GET /internal/ml/anomalies
+  Response Payload: List<MlAnomalyResult>
+
+- GET /internal/ml/person/{personId}/anomalies
+  Path Variables:
+    - personId (String)
+  Response Payload: List<MlAnomalyResult>
+
+- GET /internal/ml/key-actors
+  Response Payload: List<MlKeyActorResult>
+
+- GET /internal/ml/communities
+  Response Payload: List<MlCommunityResult>
+
+- GET /internal/ml/potential-links
+  Response Payload: List<MlPotentialLinkResult>
+
+--------------------------------------------------------------------------------
+
+18. INTERNAL NATURAL LANGUAGE PROCESSING (NLP) API
+Controller: com.project.tekathon.drishti.controller.NlpController
+
+- POST /internal/nlp/extract
+  Request Body: NlpExtractRequest
+    - documentId (String, Required)
+    - caseId (String, Required)
+    - documentType (String, Required)
+    - language (String, Required)
+    - text (String, Required)
+    - metadata (Map<String, Object>, Optional)
+  Response Payload: NlpExtractionResponse
+    {
+      "documentId": "String",
+      "caseId": "String",
+      "entities": [
+        {
+          "mention": "String",
+          "type": "String",
+          "canonicalId": "String",
+          "confidence": "Double",
+          "evidence": { "text": "String", "start": "Integer", "end": "Integer" }
+        }
+      ],
+      "relationships": [
+        {
+          "sourceId": "String",
+          "relation": "String",
+          "targetId": "String",
+          "confidence": "Double",
+          "evidence": Map<String, Object>
+        }
+      ],
+      "events": [
+        {
+          "type": "String",
+          "date": "LocalDate (YYYY-MM-DD)",
+          "locationId": "String",
+          "participants": [ "String" ]
+        }
+      ]
+    }
+
+- POST /internal/nlp/entity-resolution
+  Request Body: EntityResolutionRequest
+    - entity (Map<String, Object>, Required)
+    - candidateEntities (List<Map<String, Object>>, Required)
+  Response Payload: EntityResolutionResponse
+    {
+      "resolved": "Boolean",
+      "canonicalId": "String",
+      "confidence": "Double",
+      "status": "String"
+    }
+
+================================================================================
