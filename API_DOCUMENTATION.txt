@@ -783,3 +783,8 @@ Controller: com.project.tekathon.drishti.controller.NlpController
     }
 
 ================================================================================
+
+
+pk7dc739LxYaztSSFzgqcpz3D4PRVeKO
+postgresql://dristhi_user:pk7dc739LxYaztSSFzgqcpz3D4PRVeKO@dpg-dalvd3mk1f9s7382kme0-a/dristhi
+postgresql://dristhi_user:pk7dc739LxYaztSSFzgqcpz3D4PRVeKO@dpg-dalvd3mk1f9s7382kme0-a.oregon-postgres.render.com/dristhi
