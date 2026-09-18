@@ -74,7 +74,8 @@ In the **Environment** tab of your Render Web Service, add the following environ
 | `NEO4J_URI` | `neo4j+s://xxxxx.databases.neo4j.io` |
 | `NEO4J_USERNAME` | `neo4j` |
 | `NEO4J_PASSWORD` | `your_aura_password` |
-| `NLP_SERVICE_URL` | `https://your-nlp-service.onrender.com` *(or mock URL)* |
+| `NLP_SERVICE_URL` | `https://sih-criminal-nlp-api.onrender.com` |
+| `NLP_SERVICE_API_KEY` | *(Optional API Key if required by remote NLP service)* |
 | `ML_SERVICE_URL` | `https://your-ml-service.onrender.com` *(or mock URL)* |
 | `AGENT_SERVICE_URL` | `https://your-agent-service.onrender.com` *(or mock URL)* |
 

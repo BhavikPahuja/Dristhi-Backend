@@ -12,15 +12,18 @@ import org.springframework.web.reactive.function.client.WebClient;
 @Component
 public class NlpServiceClient extends AbstractPythonServiceClient {
 
-    public NlpServiceClient(WebClient.Builder builder, @Value("${nlp.service.url}") String baseUrl) {
-        super(builder, baseUrl, "NLP_SERVICE_UNAVAILABLE", "NLP service is currently unavailable");
+    public NlpServiceClient(
+            WebClient.Builder builder,
+            @Value("${nlp.service.url}") String baseUrl,
+            @Value("${nlp.service.api-key:}") String apiKey) {
+        super(builder, baseUrl, apiKey, "NLP_SERVICE_UNAVAILABLE", "NLP service is currently unavailable");
     }
 
     public NlpExtractionResponse extract(NlpExtractRequest request) {
-        return post("/extract", request, NlpExtractionResponse.class);
+        return post("/internal/nlp/extract", request, NlpExtractionResponse.class);
     }
 
     public EntityResolutionResponse resolve(EntityResolutionRequest request) {
-        return post("/entity-resolution", request, EntityResolutionResponse.class);
+        return post("/internal/nlp/entity-resolution", request, EntityResolutionResponse.class);
     }
 }

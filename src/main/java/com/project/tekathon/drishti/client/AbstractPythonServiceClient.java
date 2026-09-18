@@ -12,7 +12,15 @@ abstract class AbstractPythonServiceClient {
     private final String unavailableMessage;
 
     protected AbstractPythonServiceClient(WebClient.Builder builder, String baseUrl, String errorCode, String unavailableMessage) {
-        this.webClient = builder.baseUrl(baseUrl).build();
+        this(builder, baseUrl, null, errorCode, unavailableMessage);
+    }
+
+    protected AbstractPythonServiceClient(WebClient.Builder builder, String baseUrl, String apiKey, String errorCode, String unavailableMessage) {
+        WebClient.Builder webClientBuilder = builder.baseUrl(baseUrl);
+        if (apiKey != null && !apiKey.isBlank()) {
+            webClientBuilder.defaultHeader("X-API-Key", apiKey);
+        }
+        this.webClient = webClientBuilder.build();
         this.errorCode = errorCode;
         this.unavailableMessage = unavailableMessage;
     }
