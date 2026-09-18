@@ -35,14 +35,29 @@ public class DocumentService {
     private final ObjectMapper objectMapper;
 
     public UploadDocumentResponse upload(String caseId, MultipartFile file, String documentType, String title, String source, String language) {
-        caseService.findCase(caseId);
         if (file == null || file.isEmpty()) {
             throw new BadRequestException("Document file is required");
         }
+
+        String targetCaseId = caseId;
+        if (targetCaseId == null || targetCaseId.isBlank() || "auto".equalsIgnoreCase(targetCaseId) || "new".equalsIgnoreCase(targetCaseId)) {
+            String caseTitle = (title != null && !title.isBlank()) ? "Case - " + title : "Case for " + file.getOriginalFilename();
+            var newCase = caseService.create(new com.project.tekathon.drishti.dto.CaseDtos.CreateCaseRequest(caseTitle, "Auto-created during document upload", "ACTIVE"));
+            targetCaseId = newCase.caseId();
+        } else {
+            try {
+                caseService.findCase(targetCaseId);
+            } catch (ResourceNotFoundException ex) {
+                String caseTitle = (title != null && !title.isBlank()) ? title + " Case" : "Case " + targetCaseId;
+                var newCase = caseService.create(new com.project.tekathon.drishti.dto.CaseDtos.CreateCaseRequest(caseTitle, "Auto-created for ID " + targetCaseId, "ACTIVE"));
+                targetCaseId = newCase.caseId();
+            }
+        }
+
         String extractedText = TextExtractionUtils.extractText(file);
         DocumentEntity document = DocumentEntity.builder()
                 .documentId(IdGenerator.next("DOC", documentRepository.count() + 1))
-                .caseId(caseId)
+                .caseId(targetCaseId)
                 .documentType(documentType == null ? "OTHER" : documentType)
                 .title(title == null || title.isBlank() ? file.getOriginalFilename() : title)
                 .text(extractedText)
@@ -55,21 +70,26 @@ public class DocumentService {
         networkService.syncDocument(saved);
 
         NlpExtractionResponse nlpResult;
-        try {
-            nlpResult = nlpServiceClient.extract(new NlpExtractRequest(
-                    saved.getDocumentId(),
-                    caseId,
-                    saved.getDocumentType(),
-                    saved.getLanguage(),
-                    extractedText,
-                    Map.of(
-                            "source", saved.getSource(),
-                            "createdAt", saved.getCreatedAt() == null ? Instant.now().toString() : saved.getCreatedAt().toString())));
-            saveNlpResult(saved, nlpResult);
-            investigationDataService.applyNlpExtraction(caseId, saved.getDocumentId(), nlpResult.entities(), nlpResult.relationships(), nlpResult.events());
-        } catch (Exception ex) {
-            log.warn("NLP extraction failed or timed out for document {}: {}. Proceeding without NLP enhancement.", saved.getDocumentId(), ex.getMessage());
-            nlpResult = new NlpExtractionResponse(saved.getDocumentId(), caseId, List.of(), List.of(), List.of());
+        if (extractedText == null || extractedText.isBlank()) {
+            log.info("Document {} contains no readable text. Skipping NLP extraction.", saved.getDocumentId());
+            nlpResult = new NlpExtractionResponse(saved.getDocumentId(), targetCaseId, List.of(), List.of(), List.of());
+        } else {
+            try {
+                nlpResult = nlpServiceClient.extract(new NlpExtractRequest(
+                        saved.getDocumentId(),
+                        targetCaseId,
+                        saved.getDocumentType(),
+                        saved.getLanguage(),
+                        extractedText.trim(),
+                        Map.of(
+                                "source", saved.getSource(),
+                                "createdAt", saved.getCreatedAt() == null ? Instant.now().toString() : saved.getCreatedAt().toString())));
+                saveNlpResult(saved, nlpResult);
+                investigationDataService.applyNlpExtraction(targetCaseId, saved.getDocumentId(), nlpResult.entities(), nlpResult.relationships(), nlpResult.events());
+            } catch (Exception ex) {
+                log.warn("NLP extraction failed or timed out for document {}: {}. Proceeding without NLP enhancement.", saved.getDocumentId(), ex.getMessage());
+                nlpResult = new NlpExtractionResponse(saved.getDocumentId(), targetCaseId, List.of(), List.of(), List.of());
+            }
         }
 
         return new UploadDocumentResponse(saved.getDocumentId(), saved.getCaseId(), saved.getDocumentType(),

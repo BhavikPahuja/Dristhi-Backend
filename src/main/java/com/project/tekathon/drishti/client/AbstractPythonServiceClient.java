@@ -33,12 +33,16 @@ abstract class AbstractPythonServiceClient {
                     .retrieve()
                     .bodyToMono(responseType)
                     .timeout(Duration.ofSeconds(60))
-                    .onErrorMap(throwable -> new ServiceUnavailableException(errorCode, unavailableMessage))
+                    .onErrorMap(throwable -> {
+                        org.slf4j.LoggerFactory.getLogger(getClass()).error("HTTP POST call to {} failed: {}", path, throwable.getMessage(), throwable);
+                        return new ServiceUnavailableException(errorCode, unavailableMessage + " (" + throwable.getMessage() + ")");
+                    })
                     .block();
         } catch (ServiceUnavailableException ex) {
             throw ex;
         } catch (Exception ex) {
-            throw new ServiceUnavailableException(errorCode, unavailableMessage);
+            org.slf4j.LoggerFactory.getLogger(getClass()).error("HTTP POST call to {} unexpected error: {}", path, ex.getMessage(), ex);
+            throw new ServiceUnavailableException(errorCode, unavailableMessage + " (" + ex.getMessage() + ")");
         }
     }
 
@@ -49,11 +53,15 @@ abstract class AbstractPythonServiceClient {
                     .retrieve()
                     .bodyToMono(responseType)
                     .timeout(Duration.ofSeconds(60));
-            return mono.onErrorMap(throwable -> new ServiceUnavailableException(errorCode, unavailableMessage)).block();
+            return mono.onErrorMap(throwable -> {
+                org.slf4j.LoggerFactory.getLogger(getClass()).error("HTTP GET call to {} failed: {}", path, throwable.getMessage(), throwable);
+                return new ServiceUnavailableException(errorCode, unavailableMessage + " (" + throwable.getMessage() + ")");
+            }).block();
         } catch (ServiceUnavailableException ex) {
             throw ex;
         } catch (Exception ex) {
-            throw new ServiceUnavailableException(errorCode, unavailableMessage);
+            org.slf4j.LoggerFactory.getLogger(getClass()).error("HTTP GET call to {} unexpected error: {}", path, ex.getMessage(), ex);
+            throw new ServiceUnavailableException(errorCode, unavailableMessage + " (" + ex.getMessage() + ")");
         }
     }
 }

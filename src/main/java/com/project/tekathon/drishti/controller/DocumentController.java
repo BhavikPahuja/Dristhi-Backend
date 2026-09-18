@@ -37,6 +37,18 @@ public class DocumentController {
                 .body(documentService.upload(caseId, file, documentType, title, source, language));
     }
 
+    @PostMapping(value = "/documents/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<UploadDocumentResponse> uploadDirect(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam(value = "caseId", required = false) String caseId,
+            @RequestParam(value = "documentType", required = false) String documentType,
+            @RequestParam(value = "title", required = false) String title,
+            @RequestParam(value = "source", required = false) String source,
+            @RequestParam(value = "language", required = false) String language) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(documentService.upload(caseId, file, documentType, title, source, language));
+    }
+
     @GetMapping("/cases/{caseId}/documents")
     public List<DocumentListItemResponse> listCaseDocuments(@PathVariable String caseId) {
         return documentService.listByCase(caseId);

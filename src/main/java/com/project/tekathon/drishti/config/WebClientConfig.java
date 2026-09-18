@@ -17,11 +17,11 @@ public class WebClientConfig {
     @Bean
     public WebClient.Builder webClientBuilder() {
         HttpClient httpClient = HttpClient.create()
-                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5000)
-                .responseTimeout(Duration.ofSeconds(15))
+                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 30000)
+                .responseTimeout(Duration.ofSeconds(120))
                 .doOnConnected(connection -> connection
-                        .addHandlerLast(new ReadTimeoutHandler(15))
-                        .addHandlerLast(new WriteTimeoutHandler(15)));
+                        .addHandlerLast(new ReadTimeoutHandler(120))
+                        .addHandlerLast(new WriteTimeoutHandler(120)));
         return WebClient.builder().clientConnector(new ReactorClientHttpConnector(httpClient));
     }
 
