@@ -53,7 +53,7 @@ public class CaseService {
 
     public List<CaseListItemResponse> list() {
         return caseRepository.findAll().stream()
-                .sorted(Comparator.comparing(CaseEntity::getCreatedAt).reversed())
+                .sorted(Comparator.comparing(CaseEntity::getCreatedAt, Comparator.nullsLast(Comparator.naturalOrder())).reversed())
                 .map(caseEntity -> new CaseListItemResponse(
                         caseEntity.getCaseId(),
                         caseEntity.getTitle(),
@@ -134,7 +134,7 @@ public class CaseService {
                     null));
         }
         return timeline.stream()
-                .sorted(Comparator.comparing(PersonTimelineItemResponse::timestamp))
+                .sorted(Comparator.comparing(PersonTimelineItemResponse::timestamp, Comparator.nullsLast(Comparator.naturalOrder())))
                 .toList();
     }
 

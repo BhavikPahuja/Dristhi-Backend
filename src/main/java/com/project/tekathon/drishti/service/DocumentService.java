@@ -54,18 +54,24 @@ public class DocumentService {
         DocumentEntity saved = documentRepository.save(document);
         networkService.syncDocument(saved);
 
-        NlpExtractionResponse nlpResult = nlpServiceClient.extract(new NlpExtractRequest(
-                saved.getDocumentId(),
-                caseId,
-                saved.getDocumentType(),
-                saved.getLanguage(),
-                extractedText,
-                Map.of(
-                        "source", saved.getSource(),
-                        "createdAt", saved.getCreatedAt() == null ? Instant.now().toString() : saved.getCreatedAt().toString())));
+        NlpExtractionResponse nlpResult;
+        try {
+            nlpResult = nlpServiceClient.extract(new NlpExtractRequest(
+                    saved.getDocumentId(),
+                    caseId,
+                    saved.getDocumentType(),
+                    saved.getLanguage(),
+                    extractedText,
+                    Map.of(
+                            "source", saved.getSource(),
+                            "createdAt", saved.getCreatedAt() == null ? Instant.now().toString() : saved.getCreatedAt().toString())));
+            saveNlpResult(saved, nlpResult);
+            investigationDataService.applyNlpExtraction(caseId, saved.getDocumentId(), nlpResult.entities(), nlpResult.relationships(), nlpResult.events());
+        } catch (Exception ex) {
+            log.warn("NLP extraction failed or timed out for document {}: {}. Proceeding without NLP enhancement.", saved.getDocumentId(), ex.getMessage());
+            nlpResult = new NlpExtractionResponse(saved.getDocumentId(), caseId, List.of(), List.of(), List.of());
+        }
 
-        saveNlpResult(saved, nlpResult);
-        investigationDataService.applyNlpExtraction(caseId, saved.getDocumentId(), nlpResult.entities(), nlpResult.relationships(), nlpResult.events());
         return new UploadDocumentResponse(saved.getDocumentId(), saved.getCaseId(), saved.getDocumentType(),
                 saved.getTitle(), saved.getSource(), saved.getCreatedAt(), nlpResult);
     }

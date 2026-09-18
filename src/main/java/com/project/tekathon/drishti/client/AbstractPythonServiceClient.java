@@ -32,7 +32,7 @@ abstract class AbstractPythonServiceClient {
                     .bodyValue(body)
                     .retrieve()
                     .bodyToMono(responseType)
-                    .timeout(Duration.ofSeconds(20))
+                    .timeout(Duration.ofSeconds(60))
                     .onErrorMap(throwable -> new ServiceUnavailableException(errorCode, unavailableMessage))
                     .block();
         } catch (ServiceUnavailableException ex) {
@@ -48,7 +48,7 @@ abstract class AbstractPythonServiceClient {
                     .uri(path)
                     .retrieve()
                     .bodyToMono(responseType)
-                    .timeout(Duration.ofSeconds(20));
+                    .timeout(Duration.ofSeconds(60));
             return mono.onErrorMap(throwable -> new ServiceUnavailableException(errorCode, unavailableMessage)).block();
         } catch (ServiceUnavailableException ex) {
             throw ex;
