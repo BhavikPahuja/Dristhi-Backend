@@ -69,9 +69,4 @@ public class CaseController {
     public List<DocumentListItemResponse> fir(@PathVariable String caseId) {
         return caseService.fir(caseId);
     }
-
-    @GetMapping("/{caseId}/timeline")
-    public List<PersonTimelineItemResponse> timeline(@PathVariable String caseId) {
-        return caseService.timeline(caseId);
-    }
 }
