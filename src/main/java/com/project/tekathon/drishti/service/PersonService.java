@@ -64,6 +64,10 @@ public class PersonService {
         return toResponse(saved);
     }
 
+    public List<PersonResponse> listAll() {
+        return personRepository.findAll().stream().map(this::toResponse).toList();
+    }
+
     public List<PersonSearchResponse> search(String query) {
         String normalized = query == null ? "" : query.trim().toLowerCase(Locale.ROOT);
         return personRepository.findAll().stream()

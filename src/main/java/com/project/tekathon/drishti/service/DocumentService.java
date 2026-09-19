@@ -96,6 +96,13 @@ public class DocumentService {
                 saved.getTitle(), saved.getSource(), saved.getCreatedAt(), nlpResult);
     }
 
+    public List<DocumentListItemResponse> listAll() {
+        return documentRepository.findAll().stream()
+                .map(document -> new DocumentListItemResponse(document.getDocumentId(), document.getCaseId(),
+                        document.getDocumentType(), document.getTitle(), document.getSource(), document.getCreatedAt()))
+                .toList();
+    }
+
     public List<DocumentListItemResponse> listByCase(String caseId) {
         caseService.findCase(caseId);
         return documentRepository.findByCaseIdOrderByCreatedAtDesc(caseId).stream()

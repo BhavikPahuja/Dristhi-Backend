@@ -26,6 +26,11 @@ public class PersonController {
 
     private final PersonService personService;
 
+    @GetMapping
+    public List<PersonResponse> listAll() {
+        return personService.listAll();
+    }
+
     @GetMapping("/search")
     public List<PersonSearchResponse> search(@RequestParam String query) {
         return personService.search(query);

@@ -42,7 +42,9 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -303,17 +305,30 @@ public class InvestigationDataService {
     public void applyNlpExtraction(String caseId, String documentId, List<com.project.tekathon.drishti.dto.IntegrationDtos.NlpEntityResult> entities,
             List<com.project.tekathon.drishti.dto.IntegrationDtos.NlpRelationshipResult> relationships,
             List<com.project.tekathon.drishti.dto.IntegrationDtos.NlpEventResult> events) {
+        
+        Map<String, String> idMapping = new HashMap<>();
+
         for (var entity : entities) {
             if ("PERSON".equalsIgnoreCase(entity.type()) && entity.canonicalId() != null) {
-                createEvidence(new CreateEvidenceRequest(caseId, "ENTITY", "Extracted person mention " + entity.mention(), documentId,
-                        entity.canonicalId(), null, entity.evidence() == null ? null : entity.evidence().text()));
+                String mentionName = entity.mention() == null ? "" : entity.mention().trim();
 
-                if (personRepository.findById(entity.canonicalId()).isEmpty()) {
+                // Deduplicate by matching person name (case-insensitive) or existing ID
+                var existingPerson = personRepository.findAll().stream()
+                        .filter(p -> p.getName() != null && p.getName().equalsIgnoreCase(mentionName))
+                        .findFirst();
+
+                String resolvedId;
+                if (existingPerson.isPresent()) {
+                    resolvedId = existingPerson.get().getPersonId();
+                } else if (personRepository.findById(entity.canonicalId()).isPresent()) {
+                    resolvedId = entity.canonicalId();
+                } else {
+                    resolvedId = IdGenerator.next("P", personRepository.count() + 1);
                     PersonEntity person = PersonEntity.builder()
-                            .personId(entity.canonicalId())
-                            .name(entity.mention())
+                            .personId(resolvedId)
+                            .name(mentionName)
                             .status("EXTRACTED_PERSON")
-                            .notes("Extracted from document " + documentId)
+                            .notes("Extracted from document " + documentId + " (canonical: " + entity.canonicalId() + ")")
                             .build();
                     PersonEntity savedPerson = personRepository.save(person);
                     try {
@@ -322,14 +337,29 @@ public class InvestigationDataService {
                         log.warn("Failed to sync extracted person {}", savedPerson.getPersonId(), ex);
                     }
                 }
+
+                idMapping.put(entity.canonicalId(), resolvedId);
+
+                createEvidence(new CreateEvidenceRequest(caseId, "ENTITY", "Extracted person mention " + entity.mention(), documentId,
+                        resolvedId, null, entity.evidence() == null ? null : entity.evidence().text()));
             }
         }
         for (var relationship : relationships) {
-            RelationshipEntityBuilder.create(relationshipRepository, networkService, objectMapper, caseId, documentId, relationship);
+            String sourceId = idMapping.getOrDefault(relationship.sourceId(), relationship.sourceId());
+            String targetId = idMapping.getOrDefault(relationship.targetId(), relationship.targetId());
+            com.project.tekathon.drishti.dto.IntegrationDtos.NlpRelationshipResult mappedRel =
+                    new com.project.tekathon.drishti.dto.IntegrationDtos.NlpRelationshipResult(
+                            sourceId, relationship.relation(), targetId, relationship.confidence(), relationship.evidence());
+            RelationshipEntityBuilder.create(relationshipRepository, networkService, objectMapper, caseId, documentId, mappedRel);
         }
         for (var event : events) {
+            String primaryParticipant = null;
+            if (event.participants() != null && !event.participants().isEmpty()) {
+                String rawId = event.participants().get(0);
+                primaryParticipant = idMapping.getOrDefault(rawId, rawId);
+            }
             createEvent(new CreateEventRequest(caseId, event.type(), event.date() == null ? Instant.now() : event.date().atStartOfDay(java.time.ZoneOffset.UTC).toInstant(),
-                    event.locationId(), "Extracted event", documentId, event.participants() == null || event.participants().isEmpty() ? null : event.participants().get(0)));
+                    event.locationId(), "Extracted event", documentId, primaryParticipant));
         }
     }
 

@@ -50,6 +50,11 @@ DocumentController {
                 .body(documentService.upload(caseId, file, documentType, title, source, language));
     }
 
+    @GetMapping("/documents")
+    public List<DocumentListItemResponse> listAll() {
+        return documentService.listAll();
+    }
+
     @GetMapping("/cases/{caseId}/documents")
     public List<DocumentListItemResponse> listCaseDocuments(@PathVariable String caseId) {
         return documentService.listByCase(caseId);

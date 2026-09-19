@@ -7,17 +7,22 @@ import com.project.tekathon.drishti.dto.CaseDtos.UpdateCaseRequest;
 import com.project.tekathon.drishti.dto.DocumentDtos.DocumentListItemResponse;
 import com.project.tekathon.drishti.dto.InvestigationDtos.EvidenceResponse;
 import com.project.tekathon.drishti.dto.InvestigationDtos.SurveillanceResponse;
+import com.project.tekathon.drishti.dto.PersonDtos.PersonResponse;
 import com.project.tekathon.drishti.dto.PersonDtos.PersonTimelineItemResponse;
 import com.project.tekathon.drishti.entity.CaseEntity;
 import com.project.tekathon.drishti.entity.DocumentEntity;
 import com.project.tekathon.drishti.entity.EvidenceEntity;
 import com.project.tekathon.drishti.entity.InvestigationEventEntity;
+import com.project.tekathon.drishti.entity.PersonEntity;
+import com.project.tekathon.drishti.entity.RelationshipEntity;
 import com.project.tekathon.drishti.entity.SurveillanceReportEntity;
 import com.project.tekathon.drishti.exception.ResourceNotFoundException;
 import com.project.tekathon.drishti.repository.CaseRepository;
 import com.project.tekathon.drishti.repository.DocumentRepository;
 import com.project.tekathon.drishti.repository.EvidenceRepository;
 import com.project.tekathon.drishti.repository.EventRepository;
+import com.project.tekathon.drishti.repository.PersonRepository;
+import com.project.tekathon.drishti.repository.RelationshipRepository;
 import com.project.tekathon.drishti.repository.SurveillanceRepository;
 import com.project.tekathon.drishti.util.IdGenerator;
 import java.time.Instant;
@@ -36,6 +41,8 @@ public class CaseService {
     private final SurveillanceRepository surveillanceRepository;
     private final EvidenceRepository evidenceRepository;
     private final EventRepository eventRepository;
+    private final PersonRepository personRepository;
+    private final RelationshipRepository relationshipRepository;
     private final NetworkService networkService;
 
     public CaseResponse create(CreateCaseRequest request) {
@@ -103,6 +110,57 @@ public class CaseService {
         findCase(caseId);
         return evidenceRepository.findByCaseIdOrderByCreatedAtDesc(caseId).stream()
                 .map(this::toResponse)
+                .toList();
+    }
+
+    public List<PersonResponse> persons(String caseId) {
+        findCase(caseId);
+        List<String> caseEntityIds = new ArrayList<>();
+        relationshipRepository.findAll().stream()
+                .filter(rel -> caseId.equalsIgnoreCase(rel.getCaseId()))
+                .forEach(rel -> {
+                    caseEntityIds.add(rel.getSourceId());
+                    caseEntityIds.add(rel.getTargetId());
+                });
+        evidenceRepository.findByCaseIdOrderByCreatedAtDesc(caseId).stream()
+                .filter(ev -> ev.getEntityId() != null)
+                .forEach(ev -> caseEntityIds.add(ev.getEntityId()));
+
+        List<PersonEntity> matchedPersons;
+        if (caseEntityIds.isEmpty()) {
+            matchedPersons = personRepository.findAll();
+        } else {
+            matchedPersons = personRepository.findAll().stream()
+                    .filter(p -> caseEntityIds.contains(p.getPersonId()))
+                    .distinct()
+                    .toList();
+            if (matchedPersons.isEmpty()) {
+                matchedPersons = personRepository.findAll();
+            }
+        }
+
+        return matchedPersons.stream()
+                .map(p -> new PersonResponse(p.getPersonId(), p.getName(), p.getAliases(), p.getAge(), p.getDateOfBirth(), p.getAddress(), p.getStatus(), p.getCreatedAt(), p.getUpdatedAt()))
+                .toList();
+    }
+
+    public List<DocumentListItemResponse> fir(String caseId) {
+        findCase(caseId);
+        return documentRepository.findByCaseIdOrderByCreatedAtDesc(caseId).stream()
+                .filter(doc -> doc.getDocumentType() != null && (
+                        doc.getDocumentType().equalsIgnoreCase("FIR") ||
+                        doc.getDocumentType().equalsIgnoreCase("BAIL_JUDGMENT") ||
+                        doc.getDocumentType().equalsIgnoreCase("HANDWRITTEN_NOTE") ||
+                        doc.getDocumentType().equalsIgnoreCase("JUDGMENT") ||
+                        doc.getDocumentType().equalsIgnoreCase("OTHER")
+                ))
+                .map(document -> new DocumentListItemResponse(
+                        document.getDocumentId(),
+                        document.getCaseId(),
+                        document.getDocumentType(),
+                        document.getTitle(),
+                        document.getSource(),
+                        document.getCreatedAt()))
                 .toList();
     }
 

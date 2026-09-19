@@ -4,7 +4,10 @@ import com.project.tekathon.drishti.dto.CaseDtos.CaseListItemResponse;
 import com.project.tekathon.drishti.dto.CaseDtos.CaseResponse;
 import com.project.tekathon.drishti.dto.CaseDtos.CreateCaseRequest;
 import com.project.tekathon.drishti.dto.CaseDtos.UpdateCaseRequest;
+import com.project.tekathon.drishti.dto.DocumentDtos.DocumentListItemResponse;
 import com.project.tekathon.drishti.dto.InvestigationDtos.SurveillanceResponse;
+import com.project.tekathon.drishti.dto.PersonDtos.PersonResponse;
+import com.project.tekathon.drishti.dto.PersonDtos.PersonTimelineItemResponse;
 import com.project.tekathon.drishti.service.CaseService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -57,4 +60,18 @@ public class CaseController {
         return caseService.surveillance(caseId);
     }
 
+    @GetMapping("/{caseId}/persons")
+    public List<PersonResponse> persons(@PathVariable String caseId) {
+        return caseService.persons(caseId);
+    }
+
+    @GetMapping("/{caseId}/fir")
+    public List<DocumentListItemResponse> fir(@PathVariable String caseId) {
+        return caseService.fir(caseId);
+    }
+
+    @GetMapping("/{caseId}/timeline")
+    public List<PersonTimelineItemResponse> timeline(@PathVariable String caseId) {
+        return caseService.timeline(caseId);
+    }
 }
