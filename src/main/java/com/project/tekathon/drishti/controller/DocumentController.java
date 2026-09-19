@@ -21,7 +21,8 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor
-public class DocumentController {
+public class
+DocumentController {
 
     private final DocumentService documentService;
 

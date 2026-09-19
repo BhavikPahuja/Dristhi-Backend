@@ -22,6 +22,7 @@ import com.project.tekathon.drishti.entity.EvidenceEntity;
 import com.project.tekathon.drishti.entity.InvestigationEventEntity;
 import com.project.tekathon.drishti.entity.LocationEntity;
 import com.project.tekathon.drishti.entity.SurveillanceReportEntity;
+import com.project.tekathon.drishti.entity.PersonEntity;
 import com.project.tekathon.drishti.entity.TransactionEntity;
 import com.project.tekathon.drishti.entity.VehicleEntity;
 import com.project.tekathon.drishti.exception.ResourceNotFoundException;
@@ -30,6 +31,7 @@ import com.project.tekathon.drishti.repository.CdrRepository;
 import com.project.tekathon.drishti.repository.EvidenceRepository;
 import com.project.tekathon.drishti.repository.EventRepository;
 import com.project.tekathon.drishti.repository.LocationRepository;
+import com.project.tekathon.drishti.repository.PersonRepository;
 import com.project.tekathon.drishti.repository.PhoneRepository;
 import com.project.tekathon.drishti.repository.RelationshipRepository;
 import com.project.tekathon.drishti.repository.SurveillanceRepository;
@@ -60,6 +62,7 @@ public class InvestigationDataService {
     private final AccountRepository accountRepository;
     private final RelationshipRepository relationshipRepository;
     private final PhoneRepository phoneRepository;
+    private final PersonRepository personRepository;
     private final NetworkService networkService;
     private final ObjectMapper objectMapper;
 
@@ -304,6 +307,21 @@ public class InvestigationDataService {
             if ("PERSON".equalsIgnoreCase(entity.type()) && entity.canonicalId() != null) {
                 createEvidence(new CreateEvidenceRequest(caseId, "ENTITY", "Extracted person mention " + entity.mention(), documentId,
                         entity.canonicalId(), null, entity.evidence() == null ? null : entity.evidence().text()));
+
+                if (personRepository.findById(entity.canonicalId()).isEmpty()) {
+                    PersonEntity person = PersonEntity.builder()
+                            .personId(entity.canonicalId())
+                            .name(entity.mention())
+                            .status("EXTRACTED_PERSON")
+                            .notes("Extracted from document " + documentId)
+                            .build();
+                    PersonEntity savedPerson = personRepository.save(person);
+                    try {
+                        networkService.syncPerson(savedPerson);
+                    } catch (Exception ex) {
+                        log.warn("Failed to sync extracted person {}", savedPerson.getPersonId(), ex);
+                    }
+                }
             }
         }
         for (var relationship : relationships) {
