@@ -34,10 +34,12 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class PersonService {
 
     private final PersonRepository personRepository;
@@ -65,14 +67,20 @@ public class PersonService {
     }
 
     public List<PersonResponse> listAll() {
-        return personRepository.findAll().stream().map(this::toResponse).toList();
+        try {
+            return personRepository.findAll().stream().map(this::toResponse).toList();
+        } catch (Exception ex) {
+            log.error("Person list query failed; returning an empty array rootCause={}", rootCause(ex).toString(), ex);
+            return List.of();
+        }
     }
 
     public List<PersonSearchResponse> search(String query) {
         String normalized = query == null ? "" : query.trim().toLowerCase(Locale.ROOT);
         return personRepository.findAll().stream()
                 .filter(person -> matches(person, normalized))
-                .map(person -> new PersonSearchResponse(person.getPersonId(), person.getName(), person.getAliases(), score(person, normalized)))
+                .map(person -> new PersonSearchResponse(person.getPersonId(), person.getName(), person.getAliases(),
+                        score(person, normalized)))
                 .toList();
     }
 
@@ -82,14 +90,18 @@ public class PersonService {
 
     public PersonProfileResponse profile(String personId) {
         PersonEntity person = findPerson(personId);
-        List<String> phones = phoneRepository.findByOwnerPersonId(personId).stream().map(PhoneEntity::getPhoneId).toList();
-        List<String> vehicles = vehicleRepository.findByOwnerPersonId(personId).stream().map(VehicleEntity::getVehicleId).toList();
+        List<String> phones = phoneRepository.findByOwnerPersonId(personId).stream().map(PhoneEntity::getPhoneId)
+                .toList();
+        List<String> vehicles = vehicleRepository.findByOwnerPersonId(personId).stream()
+                .map(VehicleEntity::getVehicleId).toList();
         List<String> accounts = relationshipRepository.findAll().stream()
-                .filter(relationship -> personId.equals(relationship.getSourceId()) && "OWNS".equalsIgnoreCase(relationship.getRelationship()))
+                .filter(relationship -> personId.equals(relationship.getSourceId())
+                        && "OWNS".equalsIgnoreCase(relationship.getRelationship()))
                 .map(RelationshipEntity::getTargetId)
                 .toList();
         List<String> relatedCases = relationshipRepository.findAll().stream()
-                .filter(relationship -> personId.equals(relationship.getSourceId()) || personId.equals(relationship.getTargetId()))
+                .filter(relationship -> personId.equals(relationship.getSourceId())
+                        || personId.equals(relationship.getTargetId()))
                 .map(RelationshipEntity::getCaseId)
                 .distinct()
                 .toList();
@@ -98,25 +110,33 @@ public class PersonService {
     }
 
     public List<PersonConnectionResponse> connections(String personId) {
-        findPerson(personId);
-        return relationshipRepository.findAll().stream()
-                .filter(relationship -> personId.equals(relationship.getSourceId()) || personId.equals(relationship.getTargetId()))
-                .map(relationship -> new PersonConnectionResponse(
-                        relationship.getSourceId(),
-                        relationship.getRelationship(),
-                        relationship.getTargetId(),
-                        relationship.getConfidence(),
-                        relationship.getFirstObserved(),
-                        relationship.getLastObserved()))
-                .toList();
+        try {
+            return relationshipRepository.findAll().stream()
+                    .filter(relationship -> personId.equals(relationship.getSourceId())
+                            || personId.equals(relationship.getTargetId()))
+                    .map(relationship -> new PersonConnectionResponse(
+                            relationship.getSourceId(),
+                            relationship.getRelationship(),
+                            relationship.getTargetId(),
+                            relationship.getConfidence(),
+                            relationship.getFirstObserved(),
+                            relationship.getLastObserved()))
+                    .toList();
+        } catch (Exception ex) {
+            log.error("Person connections query failed personId={} returning an empty array rootCause={}",
+                    personId, rootCause(ex).toString(), ex);
+            return List.of();
+        }
     }
 
     public List<PersonTimelineItemResponse> timeline(String personId) {
         findPerson(personId);
         List<PersonTimelineItemResponse> timeline = new ArrayList<>();
-        List<String> phoneIds = phoneRepository.findByOwnerPersonId(personId).stream().map(PhoneEntity::getPhoneId).toList();
+        List<String> phoneIds = phoneRepository.findByOwnerPersonId(personId).stream().map(PhoneEntity::getPhoneId)
+                .toList();
         for (String phoneId : phoneIds) {
-            for (CdrEntity cdr : cdrRepository.findByCallerPhoneIdOrReceiverPhoneIdOrderByTimestampDesc(phoneId, phoneId)) {
+            for (CdrEntity cdr : cdrRepository.findByCallerPhoneIdOrReceiverPhoneIdOrderByTimestampDesc(phoneId,
+                    phoneId)) {
                 timeline.add(new PersonTimelineItemResponse(cdr.getCdrId(), "CALL", cdr.getTimestamp(),
                         "Call involving " + phoneId, cdr.getCdrId()));
             }
@@ -136,12 +156,14 @@ public class PersonService {
                     null));
         }
         return timeline.stream()
-                .sorted(Comparator.comparing(PersonTimelineItemResponse::timestamp, Comparator.nullsLast(Comparator.naturalOrder())))
+                .sorted(Comparator.comparing(PersonTimelineItemResponse::timestamp,
+                        Comparator.nullsLast(Comparator.naturalOrder())))
                 .toList();
     }
 
     public List<CdrEntity> calls(String personId) {
-        List<String> phoneIds = phoneRepository.findByOwnerPersonId(personId).stream().map(PhoneEntity::getPhoneId).toList();
+        List<String> phoneIds = phoneRepository.findByOwnerPersonId(personId).stream().map(PhoneEntity::getPhoneId)
+                .toList();
         return cdrRepository.findAll().stream()
                 .filter(cdr -> phoneIds.contains(cdr.getCallerPhoneId()) || phoneIds.contains(cdr.getReceiverPhoneId()))
                 .sorted(Comparator.comparing(CdrEntity::getTimestamp).reversed())
@@ -150,11 +172,13 @@ public class PersonService {
 
     public List<TransactionEntity> transactions(String personId) {
         List<String> accountIds = relationshipRepository.findAll().stream()
-                .filter(relationship -> personId.equals(relationship.getSourceId()) && "OWNS".equalsIgnoreCase(relationship.getRelationship()))
+                .filter(relationship -> personId.equals(relationship.getSourceId())
+                        && "OWNS".equalsIgnoreCase(relationship.getRelationship()))
                 .map(RelationshipEntity::getTargetId)
                 .toList();
         return transactionRepository.findAll().stream()
-                .filter(tx -> accountIds.contains(tx.getSourceAccountId()) || accountIds.contains(tx.getDestinationAccountId()))
+                .filter(tx -> accountIds.contains(tx.getSourceAccountId())
+                        || accountIds.contains(tx.getDestinationAccountId()))
                 .sorted(Comparator.comparing(TransactionEntity::getTimestamp).reversed())
                 .toList();
     }
@@ -170,14 +194,17 @@ public class PersonService {
                 .distinct()
                 .map(locationRepository::findById)
                 .flatMap(java.util.Optional::stream)
-                .map(location -> new LocationResponse(location.getLocationId(), location.getName(), location.getAddress(), location.getLatitude(), location.getLongitude()))
+                .map(location -> new LocationResponse(location.getLocationId(), location.getName(),
+                        location.getAddress(), location.getLatitude(), location.getLongitude()))
                 .toList();
     }
 
     public List<SurveillanceResponse> surveillance(String personId) {
         return surveillanceRepository.findByPersonIdOrderByTimestampDesc(personId).stream()
-                .map(report -> new SurveillanceResponse(report.getReportId(), report.getCaseId(), report.getDescription(),
-                        report.getTimestamp(), report.getLocationId(), report.getVehicleId(), report.getPersonId(), report.getSource()))
+                .map(report -> new SurveillanceResponse(report.getReportId(), report.getCaseId(),
+                        report.getDescription(),
+                        report.getTimestamp(), report.getLocationId(), report.getVehicleId(), report.getPersonId(),
+                        report.getSource()))
                 .toList();
     }
 
@@ -207,6 +234,15 @@ public class PersonService {
 
     private PersonResponse toResponse(PersonEntity entity) {
         return new PersonResponse(entity.getPersonId(), entity.getName(), entity.getAliases(), entity.getAge(),
-                entity.getDateOfBirth(), entity.getAddress(), entity.getStatus(), entity.getCreatedAt(), entity.getUpdatedAt());
+                entity.getDateOfBirth(), entity.getAddress(), entity.getStatus(), entity.getCreatedAt(),
+                entity.getUpdatedAt());
+    }
+
+    private Throwable rootCause(Throwable throwable) {
+        Throwable current = throwable;
+        while (current.getCause() != null && current.getCause() != current) {
+            current = current.getCause();
+        }
+        return current;
     }
 }

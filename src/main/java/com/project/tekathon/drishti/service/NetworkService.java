@@ -41,6 +41,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataAccessException;
 import org.springframework.data.neo4j.core.Neo4jClient;
 import org.springframework.stereotype.Service;
 
@@ -102,7 +103,8 @@ public class NetworkService {
 
     public void syncRelationship(RelationshipEntity entity) {
         syncRelationship(entity.getSourceId(), entity.getTargetId(), entity.getRelationship(), entity.getConfidence(),
-                entity.getRelationshipId(), entity.getEvidenceIdsJson(), entity.getSourceDocumentIdsJson(), entity.getSupportText());
+                entity.getRelationshipId(), entity.getEvidenceIdsJson(), entity.getSourceDocumentIdsJson(),
+                entity.getSupportText());
     }
 
     public NetworkResponse getEntityNetwork(String entityId, int depth) {
@@ -110,9 +112,6 @@ public class NetworkService {
     }
 
     public NetworkResponse getPersonNetwork(String personId, int depth) {
-        if (personRepository.findById(personId).isEmpty()) {
-            throw new ResourceNotFoundException("Person " + personId + " not found");
-        }
         return buildNetwork(personId, depth);
     }
 
@@ -200,7 +199,8 @@ public class NetworkService {
                     }
                 }
             }
-            communities.add(Map.of("communityId", "COMM" + String.format(Locale.ROOT, "%03d", index++), "memberIds", component));
+            communities.add(Map.of("communityId", "COMM" + String.format(Locale.ROOT, "%03d", index++), "memberIds",
+                    component));
         }
         return communities;
     }
@@ -252,17 +252,27 @@ public class NetworkService {
     }
 
     private List<RelationshipEntity> adjacentRelationships(String entityId) {
-        return relationshipRepository.findAll().stream()
-                .filter(relationship -> entityId.equals(relationship.getSourceId()) || entityId.equals(relationship.getTargetId()))
-                .sorted(Comparator.comparing(RelationshipEntity::getCreatedAt, Comparator.nullsLast(Comparator.naturalOrder())).reversed())
-                .collect(Collectors.toList());
+        try {
+            return relationshipRepository.findAll().stream()
+                    .filter(relationship -> entityId.equals(relationship.getSourceId())
+                            || entityId.equals(relationship.getTargetId()))
+                    .sorted(Comparator.comparing(RelationshipEntity::getCreatedAt,
+                            Comparator.nullsLast(Comparator.naturalOrder())).reversed())
+                    .collect(Collectors.toList());
+        } catch (DataAccessException ex) {
+            log.error("Network relationship query failed entityId={} returning an empty edge list rootCause={}",
+                    entityId, rootCause(ex).toString(), ex);
+            return List.of();
+        }
     }
 
     private Map<String, Set<String>> buildAdjacency() {
         Map<String, Set<String>> adjacency = new HashMap<>();
         for (RelationshipEntity relationship : relationshipRepository.findAll()) {
-            adjacency.computeIfAbsent(relationship.getSourceId(), key -> new HashSet<>()).add(relationship.getTargetId());
-            adjacency.computeIfAbsent(relationship.getTargetId(), key -> new HashSet<>()).add(relationship.getSourceId());
+            adjacency.computeIfAbsent(relationship.getSourceId(), key -> new HashSet<>())
+                    .add(relationship.getTargetId());
+            adjacency.computeIfAbsent(relationship.getTargetId(), key -> new HashSet<>())
+                    .add(relationship.getSourceId());
         }
         return adjacency;
     }
@@ -273,7 +283,8 @@ public class NetworkService {
             String source = path.get(index);
             String target = path.get(index + 1);
             String relationship = relationshipRepository.findAll().stream()
-                    .filter(candidate -> (candidate.getSourceId().equals(source) && candidate.getTargetId().equals(target))
+                    .filter(candidate -> (candidate.getSourceId().equals(source)
+                            && candidate.getTargetId().equals(target))
                             || (candidate.getSourceId().equals(target) && candidate.getTargetId().equals(source)))
                     .map(RelationshipEntity::getRelationship)
                     .findFirst()
@@ -357,29 +368,46 @@ public class NetworkService {
     }
 
     private NodeInfo lookup(String entityId) {
-        return switch (entityId == null ? "" : entityId.substring(0, Math.min(entityId.length(), 3)).toUpperCase(Locale.ROOT)) {
-            case "PH0", "PH" -> phoneRepository.findById(entityId)
-                    .map(phone -> new NodeInfo(phone.getPhoneId(), "PHONE", phone.getPhoneNumber()))
-                    .orElse(new NodeInfo(entityId, "PHONE", entityId));
-            case "V00", "V" -> vehicleRepository.findById(entityId)
-                    .map(vehicle -> new NodeInfo(vehicle.getVehicleId(), "VEHICLE", vehicle.getRegistrationNumber()))
-                    .orElse(new NodeInfo(entityId, "VEHICLE", entityId));
-            case "ACC" -> accountRepository.findById(entityId)
-                    .map(account -> new NodeInfo(account.getAccountId(), "ACCOUNT", account.getAccountNumber()))
-                    .orElse(new NodeInfo(entityId, "ACCOUNT", entityId));
-            case "LOC" -> locationRepository.findById(entityId)
-                    .map(location -> new NodeInfo(location.getLocationId(), "LOCATION", location.getName()))
-                    .orElse(new NodeInfo(entityId, "LOCATION", entityId));
-            case "CAS", "CAS0", "CASE" -> caseRepository.findById(entityId)
-                    .map(caseEntity -> new NodeInfo(caseEntity.getCaseId(), "CASE", caseEntity.getTitle()))
-                    .orElse(new NodeInfo(entityId, "CASE", entityId));
-            case "DOC" -> documentRepository.findById(entityId)
-                    .map(document -> new NodeInfo(document.getDocumentId(), "DOCUMENT", document.getTitle()))
-                    .orElse(new NodeInfo(entityId, "DOCUMENT", entityId));
-            default -> personRepository.findById(entityId)
-                    .map(person -> new NodeInfo(person.getPersonId(), "PERSON", person.getName()))
-                    .orElse(new NodeInfo(entityId, "ENTITY", entityId));
-        };
+        String prefix = entityId == null ? ""
+                : entityId.substring(0, Math.min(entityId.length(), 3)).toUpperCase(Locale.ROOT);
+        try {
+            return switch (prefix) {
+                case "PH0", "PH" -> phoneRepository.findById(entityId)
+                        .map(phone -> new NodeInfo(phone.getPhoneId(), "PHONE", phone.getPhoneNumber()))
+                        .orElse(new NodeInfo(entityId, "PHONE", entityId));
+                case "V00", "V" -> vehicleRepository.findById(entityId)
+                        .map(vehicle -> new NodeInfo(vehicle.getVehicleId(), "VEHICLE",
+                                vehicle.getRegistrationNumber()))
+                        .orElse(new NodeInfo(entityId, "VEHICLE", entityId));
+                case "ACC" -> accountRepository.findById(entityId)
+                        .map(account -> new NodeInfo(account.getAccountId(), "ACCOUNT", account.getAccountNumber()))
+                        .orElse(new NodeInfo(entityId, "ACCOUNT", entityId));
+                case "LOC" -> locationRepository.findById(entityId)
+                        .map(location -> new NodeInfo(location.getLocationId(), "LOCATION", location.getName()))
+                        .orElse(new NodeInfo(entityId, "LOCATION", entityId));
+                case "CAS", "CAS0", "CASE" -> caseRepository.findById(entityId)
+                        .map(caseEntity -> new NodeInfo(caseEntity.getCaseId(), "CASE", caseEntity.getTitle()))
+                        .orElse(new NodeInfo(entityId, "CASE", entityId));
+                case "DOC" -> documentRepository.findById(entityId)
+                        .map(document -> new NodeInfo(document.getDocumentId(), "DOCUMENT", document.getTitle()))
+                        .orElse(new NodeInfo(entityId, "DOCUMENT", entityId));
+                default -> personRepository.findById(entityId)
+                        .map(person -> new NodeInfo(person.getPersonId(), "PERSON", person.getName()))
+                        .orElse(new NodeInfo(entityId, "PERSON", entityId));
+            };
+        } catch (DataAccessException ex) {
+            log.error("Network node lookup failed entityId={} returning an unresolved person node rootCause={}",
+                    entityId, rootCause(ex).toString(), ex);
+            return new NodeInfo(entityId, "PERSON", entityId);
+        }
+    }
+
+    private Throwable rootCause(Throwable throwable) {
+        Throwable current = throwable;
+        while (current.getCause() != null && current.getCause() != current) {
+            current = current.getCause();
+        }
+        return current;
     }
 
     private record PathNode(String entityId, int depth) {
